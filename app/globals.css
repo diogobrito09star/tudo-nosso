@@ -1,0 +1,263 @@
+:root {
+  --ink: #1b1b19;
+  --bone: #ede8dd;
+  --amber: #e2a53d;
+  --moss: #46584a;
+  --line: #3a3a36;
+  --danger: #b5493a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  position: relative;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Arial Narrow", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+h1 {
+  font-size: 30px;
+  border-bottom: 3px solid var(--amber);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: #212120;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--bone);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.tab.active {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+
+.exercise-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.exercise-row:last-child {
+  border-bottom: none;
+}
+
+.exercise-name {
+  font-weight: 600;
+}
+
+.exercise-target {
+  font-variant-numeric: tabular-nums;
+  font-family: "Courier New", monospace;
+  color: var(--amber);
+  font-size: 14px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b8b3a6;
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+input[type="email"],
+textarea,
+select {
+  width: 100%;
+  background: #171715;
+  border: 1px solid var(--line);
+  color: var(--bone);
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+button.primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--amber);
+  border: none;
+  color: var(--ink);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 15px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.ghost {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--bone);
+  font-weight: 600;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.reps-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.reps-input-row input {
+  text-align: center;
+  font-family: "Courier New", monospace;
+}
+
+.nav-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  border-top: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.nav-bottom a {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0;
+  color: #b8b3a6;
+  text-decoration: none;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.nav-bottom a.active {
+  color: var(--amber);
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.session-date {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+.tag.rua {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.tag.casa {
+  background: var(--moss);
+  color: var(--bone);
+}
+
+.tag.descanso {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #b8b3a6;
+}
+
+.muted {
+  color: #8f8a7d;
+  font-size: 13px;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 8px;
+}
