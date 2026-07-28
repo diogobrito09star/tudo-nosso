@@ -542,3 +542,19 @@ button.primary:disabled {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+.chart-card {
+  background: #1b1210;
+  border-radius: 8px;
+  padding: 16px 8px 8px;
+  margin-bottom: 20px;
+}
+
+.chart-card .recharts-cartesian-axis-tick text {
+  fill: #9a8f86;
+}
+
+.chart-card .recharts-cartesian-grid-horizontal line,
+.chart-card .recharts-cartesian-grid-vertical line {
+  stroke: #3a2e29;
+}

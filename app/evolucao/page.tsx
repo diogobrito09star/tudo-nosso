@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -83,8 +83,7 @@ export default function EvolucaoPage() {
   const allDates = sessions.map((s) => s.date).sort();
   const firstDate = allDates[0];
   const lastDate = allDates[allDates.length - 1];
-  const periodo = firstDate ? `${firstDate} a ${lastDate}` : "Ainda sem registos";
-  const totalDays =
+  const totalDaysCount =
     firstDate && lastDate
       ? Math.max(
           1,
@@ -94,6 +93,11 @@ export default function EvolucaoPage() {
           ) + 1
         )
       : 0;
+  const totalDays = totalDaysCount;
+  const periodo =
+    totalDaysCount > 0
+      ? `${totalDaysCount} ${totalDaysCount === 1 ? "dia" : "dias"}`
+      : "Ainda sem registos";
   const mediaGeral = avg(
     trainingSessions
       .map((s) => s.overall_rating)
@@ -154,9 +158,10 @@ export default function EvolucaoPage() {
       <circle
         cx={cx}
         cy={cy}
-        r={4}
-        fill="var(--ember)"
-        stroke="var(--ember)"
+        r={5}
+        fill="#f4f1ea"
+        stroke="#c9622f"
+        strokeWidth={2.5}
         style={{ cursor: "pointer" }}
         onClick={() => handleGeneralPointClick(payload)}
       />
@@ -170,7 +175,16 @@ export default function EvolucaoPage() {
     const first = vals[0] ?? null;
     const last = vals[vals.length - 1] ?? null;
     return (
-      <div className="card" style={{ padding: 10, fontSize: 12 }}>
+      <div
+        style={{
+          padding: 10,
+          fontSize: 12,
+          background: "#1b1210",
+          border: "1px solid #3a2e29",
+          borderRadius: 6,
+          color: "#f4f1ea",
+        }}
+      >
         <div>Média do período: {fmt1(avg(vals))}</div>
         <div>Início do período: {fmt1(first)}</div>
         <div>Fim do período: {fmt1(last)}</div>
@@ -371,23 +385,30 @@ export default function EvolucaoPage() {
         </p>
       )}
 
-      <div style={{ width: "100%", height: 220, marginBottom: 20 }}>
-        <ResponsiveContainer>
-          <LineChart data={generalData}>
-            <CartesianGrid stroke="var(--line)" />
-            <XAxis dataKey={generalView === "dia" ? "date" : "key"} tick={{ fontSize: 10 }} />
-            <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+      <div className="chart-card">
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={generalData}>
+            <defs>
+              <linearGradient id="fillGeneral" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#c9622f" stopOpacity={0.55} />
+                <stop offset="100%" stopColor="#c9622f" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey={generalView === "dia" ? "date" : "key"} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             {generalView !== "dia" && <Tooltip content={<BucketTooltip />} />}
-            {generalView === "dia" && <Tooltip />}
-            <Line
+            {generalView === "dia" && <Tooltip contentStyle={{ background: "#1b1210", border: "1px solid #3a2e29", color: "#f4f1ea" }} />}
+            <Area
               type="monotone"
               dataKey="value"
-              stroke="var(--ember)"
-              strokeWidth={2}
+              stroke="#c9622f"
+              strokeWidth={2.5}
+              fill="url(#fillGeneral)"
               dot={<ClickableDot />}
               activeDot={<ClickableDot />}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
@@ -433,21 +454,28 @@ export default function EvolucaoPage() {
         </button>
       </div>
 
-      <div style={{ width: "100%", height: 200, marginBottom: 20 }}>
-        <ResponsiveContainer>
-          <LineChart data={exerciseSeries}>
-            <CartesianGrid stroke="var(--line)" />
-            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} />
-            <Tooltip />
-            <Line
+      <div className="chart-card">
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={exerciseSeries}>
+            <defs>
+              <linearGradient id="fillExercise" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#c9622f" stopOpacity={0.55} />
+                <stop offset="100%" stopColor="#c9622f" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={{ background: "#1b1210", border: "1px solid #3a2e29", color: "#f4f1ea" }} />
+            <Area
               type="monotone"
               dataKey={exerciseMetric === "rating" ? "rating" : "reps"}
-              stroke="var(--moss)"
-              strokeWidth={2}
-              dot={{ r: 3 }}
+              stroke="#c9622f"
+              strokeWidth={2.5}
+              fill="url(#fillExercise)"
+              dot={{ r: 4, fill: "#f4f1ea", stroke: "#c9622f", strokeWidth: 2.5 }}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
