@@ -148,6 +148,21 @@ export default function EvolucaoPage() {
     }
   }
 
+  function ClickableDot(props: any) {
+    const { cx, cy, payload } = props;
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4}
+        fill="var(--ember)"
+        stroke="var(--ember)"
+        style={{ cursor: "pointer" }}
+        onClick={() => handleGeneralPointClick(payload)}
+      />
+    );
+  }
+
   function BucketTooltip({ active, payload }: any) {
     if (!active || !payload || !payload[0]) return null;
     const d = payload[0].payload;
@@ -369,12 +384,8 @@ export default function EvolucaoPage() {
               dataKey="value"
               stroke="var(--ember)"
               strokeWidth={2}
-              dot={{ r: 4, cursor: "pointer" }}
-              activeDot={{
-                r: 6,
-                onClick: (_: unknown, index: number) =>
-                  handleGeneralPointClick(generalData[index] as any),
-              }}
+              dot={<ClickableDot />}
+              activeDot={<ClickableDot />}
             />
           </LineChart>
         </ResponsiveContainer>
