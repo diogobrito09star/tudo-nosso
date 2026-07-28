@@ -27,18 +27,18 @@ export default function RegistarPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: ex } = await supabase
-        .from("exercises")
-        .select("*")
-        .order("sort_order");
+      const { data: ex } = await supabase.from("exercises").select("*");
       setExercises((ex as Exercise[]) ?? []);
     }
     load();
   }, []);
 
-  const visibleExercises = exercises.filter(
-    (e) => e.mode === mode || e.mode === "ambos"
-  );
+  const visibleExercises = exercises
+    .filter((e) => e.mode === mode || e.mode === "ambos")
+    .sort((a, b) => {
+      const orderKey = mode === "rua" ? "sort_order_rua" : "sort_order_casa";
+      return (a[orderKey] ?? 99) - (b[orderKey] ?? 99);
+    });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
