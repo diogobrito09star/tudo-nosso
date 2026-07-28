@@ -1,0 +1,15 @@
+export const POSE_BY_KEY: Record<string, string> = {
+  flexoes_aquecimento: "flexao",
+  flexao_normal: "flexao",
+  flexao_diamante: "flexao",
+  elevacoes: "elevacao",
+  dips: "dips",
+  dips_adaptado: "dips",
+  flexao_pique: "pique",
+  barra_ao_peito: "barra",
+  flexao_tricep: "tricep",
+  flexao_tricep_adaptado: "tricep",
+  costas_toalha: "toalha",
+  abdominal: "abdominal",
+  frog_position: "frog",
+};

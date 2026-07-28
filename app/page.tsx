@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function computeStreak(dateSet: Set<string>): number {
   let streak = 0;
@@ -23,8 +18,6 @@ function computeStreak(dateSet: Set<string>): number {
 }
 
 export default function Home() {
-  const router = useRouter();
-  const [savingRest, setSavingRest] = useState(false);
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
@@ -35,21 +28,6 @@ export default function Home() {
     }
     loadStreak();
   }, []);
-
-  async function marcarDescanso() {
-    setSavingRest(true);
-    await supabase.from("sessions").upsert(
-      {
-        date: todayISO(),
-        mode: "descanso",
-        overall_rating: null,
-        note: null,
-      },
-      { onConflict: "date" }
-    );
-    setSavingRest(false);
-    router.push("/historico");
-  }
 
   return (
     <main>
@@ -66,14 +44,9 @@ export default function Home() {
         Vou treinar
       </Link>
 
-      <button
-        className="action-btn moss"
-        onClick={marcarDescanso}
-        disabled={savingRest}
-        style={{ width: "100%" }}
-      >
-        {savingRest ? "A guardar..." : "Hoje é descanso"}
-      </button>
+      <Link href="/descanso" className="action-btn moss">
+        Hoje é descanso
+      </Link>
 
       <div style={{ marginTop: 24 }}>
         <Link href="/historico" className="nav-row">

@@ -2,33 +2,49 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import type { Exercise, SessionMode } from "@/lib/types";
+import ExerciseIllustration from "@/app/components/ExerciseIllustration";
+import { POSE_BY_KEY } from "@/lib/poses";
+import type { Exercise, PreState } from "@/lib/types";
+
+type Step = "pre_state" | "mode" | "plan" | "rating" | "final";
+type Mode = "rua" | "casa";
+
+interface ExerciseState {
+  done: boolean;
+  open: boolean;
+  repsSeguidas: string;
+  repsPerSet: string[];
+  note: string;
+  rating: string;
+}
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const PRE_STATE_LABEL: Record<PreState, string> = {
+  bem: "Estou bem",
+  beca_partido: "Estou uma beca partido",
+  fodido: "Estou todo fodido",
+};
+
 export default function RegistarPage() {
-  const [mode, setMode] = useState<SessionMode>("rua");
-  const [date, setDate] = useState(todayISO());
+  const router = useRouter();
+  const [step, setStep] = useState<Step>("pre_state");
+  const [preState, setPreState] = useState<PreState | null>(null);
+  const [mode, setMode] = useState<Mode>("rua");
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [repsByExercise, setRepsByExercise] = useState<Record<string, string>>(
-    {}
-  );
-  const [ratingByExercise, setRatingByExercise] = useState<
-    Record<string, string>
-  >({});
-  const [overallRating, setOverallRating] = useState("");
-  const [note, setNote] = useState("");
+  const [exState, setExState] = useState<Record<string, ExerciseState>>({});
+  const [planChangeNote, setPlanChangeNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [savedMsg, setSavedMsg] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const { data: ex } = await supabase.from("exercises").select("*");
-      setExercises((ex as Exercise[]) ?? []);
+      const { data } = await supabase.from("exercises").select("*");
+      setExercises((data as Exercise[]) ?? []);
     }
     load();
   }, []);
@@ -36,23 +52,51 @@ export default function RegistarPage() {
   const visibleExercises = exercises
     .filter((e) => e.mode === mode || e.mode === "ambos")
     .sort((a, b) => {
-      const orderKey = mode === "rua" ? "sort_order_rua" : "sort_order_casa";
-      return (a[orderKey] ?? 99) - (b[orderKey] ?? 99);
+      const key = mode === "rua" ? "sort_order_rua" : "sort_order_casa";
+      return (a[key] ?? 99) - (b[key] ?? 99);
     });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
+  function ensureState(ex: Exercise): ExerciseState {
+    return (
+      exState[ex.id] ?? {
+        done: false,
+        open: false,
+        repsSeguidas: "",
+        repsPerSet: Array(ex.target_sets).fill(""),
+        note: "",
+        rating: "",
+      }
+    );
+  }
+
+  function updateState(id: string, patch: Partial<ExerciseState>, ex: Exercise) {
+    setExState((prev) => ({
+      ...prev,
+      [id]: { ...ensureState(ex), ...prev[id], ...patch },
+    }));
+  }
+
+  async function handleSave() {
     setSaving(true);
+    setError(null);
+
+    const ratings = visibleExercises
+      .map((ex) => Number(exState[ex.id]?.rating))
+      .filter((n) => !Number.isNaN(n) && n > 0);
+    const overallRating =
+      ratings.length > 0
+        ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length)
+        : null;
 
     const { data: sessionRow, error: sessionError } = await supabase
       .from("sessions")
       .upsert(
         {
-          date,
+          date: todayISO(),
           mode,
-          overall_rating: overallRating ? Number(overallRating) : null,
-          note: note || null,
+          pre_state: preState,
+          overall_rating: overallRating,
+          plan_change_note: planChangeNote || null,
         },
         { onConflict: "date" }
       )
@@ -70,129 +114,245 @@ export default function RegistarPage() {
       .delete()
       .eq("session_id", sessionRow.id);
 
-    const rows = visibleExercises
-      .filter((ex) => repsByExercise[ex.id]?.trim())
-      .map((ex) => ({
+    const rows = visibleExercises.map((ex) => {
+      const s = ensureState(ex);
+      return {
         session_id: sessionRow.id,
         exercise_id: ex.id,
-        reps_per_set: repsByExercise[ex.id]
-          .split(",")
-          .map((v) => parseInt(v.trim(), 10))
+        done: s.done,
+        reps_seguidas: s.repsSeguidas ? Number(s.repsSeguidas) : null,
+        reps_per_set: s.repsPerSet
+          .map((v) => parseInt(v, 10))
           .filter((n) => !Number.isNaN(n)),
-        rating: ratingByExercise[ex.id]
-          ? Number(ratingByExercise[ex.id])
-          : null,
-        note: null,
-      }));
+        rating: s.rating ? Number(s.rating) : null,
+        note: s.note || null,
+      };
+    });
 
-    if (rows.length > 0) {
-      const { error: rowsError } = await supabase
-        .from("session_exercises")
-        .insert(rows);
-      if (rowsError) {
-        setError(rowsError.message);
-        setSaving(false);
-        return;
-      }
-    }
+    const { error: rowsError } = await supabase
+      .from("session_exercises")
+      .insert(rows);
 
     setSaving(false);
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2500);
+    if (rowsError) {
+      setError(rowsError.message);
+      return;
+    }
+    setStep("final");
+  }
+
+  if (step === "pre_state") {
+    return (
+      <main>
+        <Link href="/" className="back-link">
+          ← Voltar
+        </Link>
+        <div className="eyebrow">Calistenia</div>
+        <h2>Antes deste treino, como estás?</h2>
+        {(Object.keys(PRE_STATE_LABEL) as PreState[]).map((k) => (
+          <button
+            key={k}
+            className="action-btn dark"
+            style={{ background: preState === k ? "var(--ember)" : undefined }}
+            onClick={() => {
+              setPreState(k);
+              setStep("mode");
+            }}
+          >
+            {PRE_STATE_LABEL[k]}
+          </button>
+        ))}
+      </main>
+    );
+  }
+
+  if (step === "mode") {
+    return (
+      <main>
+        <button className="back-link" onClick={() => setStep("pre_state")} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          ← Voltar
+        </button>
+        <div className="eyebrow">Calistenia</div>
+        <h2>Rua ou casa?</h2>
+        <button className="action-btn dark" onClick={() => { setMode("rua"); setStep("plan"); }}>
+          Rua
+        </button>
+        <button className="action-btn moss" onClick={() => { setMode("casa"); setStep("plan"); }}>
+          Casa
+        </button>
+      </main>
+    );
+  }
+
+  if (step === "plan") {
+    return (
+      <main>
+        <button className="back-link" onClick={() => setStep("mode")} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          ← Voltar
+        </button>
+        <div className="eyebrow">Calistenia · {mode}</div>
+        <h2>Plano de hoje</h2>
+
+        {visibleExercises.map((ex) => {
+          const s = ensureState(ex);
+          const pose = POSE_BY_KEY[ex.key] ?? "flexao";
+          return (
+            <div key={ex.id} className={`card exercise-card ${s.done ? "faded" : ""}`}>
+              <div className="card-header">
+                <div>
+                  <span className={`exercise-name ${s.done ? "exercise-name-strike" : ""}`}>
+                    {ex.name}
+                  </span>
+                  <div className="exercise-target">
+                    {ex.target_sets}x{ex.reps_is_max ? "máx" : ex.target_reps}
+                  </div>
+                </div>
+                <button
+                  className={`done-toggle ${s.done ? "done" : ""}`}
+                  onClick={() => updateState(ex.id, { done: !s.done }, ex)}
+                  aria-label="Marcar como feito"
+                >
+                  {s.done ? "✓" : ""}
+                </button>
+              </div>
+
+              <ExerciseIllustration pose={pose} />
+
+              {ex.nota_tecnica && <p className="muted">{ex.nota_tecnica}</p>}
+              {ex.video_url && (
+                <a className="video-link" href={ex.video_url} target="_blank" rel="noreferrer">
+                  Ver vídeo de referência →
+                </a>
+              )}
+
+              <button
+                className="ghost-btn"
+                style={{
+                  marginTop: 10,
+                  background: "transparent",
+                  border: "1px solid var(--line)",
+                  borderRadius: 5,
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+                onClick={() => updateState(ex.id, { open: !s.open }, ex)}
+              >
+                {s.open ? "Fechar" : "Anotar"}
+              </button>
+
+              {s.open && (
+                <div style={{ marginTop: 10 }}>
+                  <label>
+                    {ex.reps_is_max ? "Segundos aguentados" : "Repetições seguidas"}
+                  </label>
+                  <input
+                    type="number"
+                    value={s.repsSeguidas}
+                    onChange={(e) => updateState(ex.id, { repsSeguidas: e.target.value }, ex)}
+                  />
+                  {Array.from({ length: ex.target_sets }).map((_, i) => (
+                    <div key={i}>
+                      <label>Série {i + 1}</label>
+                      <input
+                        type="number"
+                        value={s.repsPerSet[i] ?? ""}
+                        onChange={(e) => {
+                          const next = [...s.repsPerSet];
+                          next[i] = e.target.value;
+                          updateState(ex.id, { repsPerSet: next }, ex);
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <label>Nota</label>
+                  <textarea
+                    value={s.note}
+                    onChange={(e) => updateState(ex.id, { note: e.target.value }, ex)}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <button className="primary" onClick={() => setStep("rating")}>
+          Acabar treino
+        </button>
+      </main>
+    );
+  }
+
+  if (step === "rating") {
+    return (
+      <main>
+        <button className="back-link" onClick={() => setStep("plan")} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          ← Voltar
+        </button>
+        <div className="eyebrow">Calistenia</div>
+        <h2>Avaliação do treino</h2>
+
+        {visibleExercises.map((ex) => {
+          const s = ensureState(ex);
+          return (
+            <div key={ex.id} className="card">
+              <span className="exercise-name">{ex.name}</span>
+              <div className="score-grid">
+                {Array.from({ length: 11 }).map((_, n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`score-btn ${Number(s.rating) === n ? "active" : ""}`}
+                    onClick={() => updateState(ex.id, { rating: String(n) }, ex)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <label>
+                {ex.reps_is_max ? "Segundos aguentados" : "Repetições seguidas"}
+              </label>
+              <input
+                type="number"
+                value={s.repsSeguidas}
+                onChange={(e) => updateState(ex.id, { repsSeguidas: e.target.value }, ex)}
+              />
+              <label>Nota</label>
+              <textarea
+                value={s.note}
+                onChange={(e) => updateState(ex.id, { note: e.target.value }, ex)}
+              />
+            </div>
+          );
+        })}
+
+        <label htmlFor="planChange">Queres fazer alguma alteração ao plano?</label>
+        <textarea
+          id="planChange"
+          value={planChangeNote}
+          onChange={(e) => setPlanChangeNote(e.target.value)}
+          placeholder="Opcional"
+        />
+
+        <button className="primary" onClick={handleSave} disabled={saving}>
+          {saving ? "A guardar..." : "Guardar treino"}
+        </button>
+        {error && <p className="error">{error}</p>}
+      </main>
+    );
   }
 
   return (
-    <main>
-      <Link href="/" className="back-link">
-        ← Voltar
-      </Link>
-      <div className="eyebrow">Calistenia</div>
-      <h2>Registar treino</h2>
-
-      <div className="tabs">
-        {(["rua", "casa"] as SessionMode[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            className={`tab ${mode === m ? "active" : ""}`}
-            onClick={() => setMode(m)}
-          >
-            {m}
-          </button>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="date">Data</label>
-        <input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-
-        <div className="card" style={{ marginTop: 16 }}>
-          {visibleExercises.map((ex) => (
-            <div key={ex.id} style={{ marginBottom: 14 }}>
-              <div className="exercise-row">
-                <span className="exercise-name">{ex.name}</span>
-                <span className="exercise-target">
-                  {ex.target_sets}x{ex.reps_is_max ? "max" : ex.target_reps}
-                </span>
-              </div>
-              <label>Reps por série (separadas por vírgula)</label>
-              <input
-                type="text"
-                placeholder="ex: 10, 8, 6"
-                value={repsByExercise[ex.id] ?? ""}
-                onChange={(e) =>
-                  setRepsByExercise((prev) => ({
-                    ...prev,
-                    [ex.id]: e.target.value,
-                  }))
-                }
-              />
-              <label>Sensação (1 a 10)</label>
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={ratingByExercise[ex.id] ?? ""}
-                onChange={(e) =>
-                  setRatingByExercise((prev) => ({
-                    ...prev,
-                    [ex.id]: e.target.value,
-                  }))
-                }
-              />
-            </div>
-          ))}
-        </div>
-
-        <label htmlFor="overallRating">Avaliação geral do treino (1 a 10)</label>
-        <input
-          id="overallRating"
-          type="number"
-          min={1}
-          max={10}
-          value={overallRating}
-          onChange={(e) => setOverallRating(e.target.value)}
-        />
-
-        <label htmlFor="note">Notas</label>
-        <textarea
-          id="note"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Como correu, dores, dificuldades..."
-        />
-
-        <button className="primary" type="submit" disabled={saving}>
-          {saving ? "A guardar..." : "Guardar treino"}
+    <main className="final-screen">
+      <div className="final-top">Treino acabado</div>
+      <div className="final-center">Bom descanso</div>
+      <div>
+        <div className="final-bottom">Amanhã há mais.</div>
+        <button className="primary" onClick={() => router.push("/")}>
+          Voltar ao início
         </button>
-        {savedMsg && <p className="muted">Treino guardado.</p>}
-        {error && <p className="error">{error}</p>}
-      </form>
+      </div>
     </main>
   );
 }

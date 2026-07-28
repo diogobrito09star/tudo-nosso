@@ -12,6 +12,8 @@ export interface Exercise {
   reps_is_max: boolean;
   sort_order_rua: number | null;
   sort_order_casa: number | null;
+  nota_tecnica: string | null;
+  video_url: string | null;
 }
 
 export interface SessionExerciseInput {

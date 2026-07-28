@@ -1,61 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session, Exercise } from "@/lib/types";
 
 interface SessionExerciseRow {
   id: string;
-  session_id: string;
-  exercise_id: string;
   reps_per_set: number[];
+  reps_seguidas: number | null;
   rating: number | null;
+  note: string | null;
   exercises: Exercise;
 }
 
+const WEEKDAYS = ["S", "T", "Q", "Q", "S", "S", "D"];
+
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function isoOf(year: number, month: number, day: number) {
+  return `${year}-${pad(month + 1)}-${pad(day)}`;
+}
+
 export default function HistoricoPage() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [details, setDetails] = useState<Record<string, SessionExerciseRow[]>>(
-    {}
-  );
-  const [loading, setLoading] = useState(true);
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const [sessionsByDate, setSessionsByDate] = useState<Record<string, Session>>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [details, setDetails] = useState<SessionExerciseRow[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("sessions")
-        .select("*")
-        .order("date", { ascending: false });
-      setSessions((data as Session[]) ?? []);
-      setLoading(false);
+      const { data } = await supabase.from("sessions").select("*");
+      const map: Record<string, Session> = {};
+      (data as Session[] | null)?.forEach((s) => {
+        map[s.date] = s;
+      });
+      setSessionsByDate(map);
     }
     load();
   }, []);
 
-  async function toggleExpand(sessionId: string) {
-    if (expanded === sessionId) {
-      setExpanded(null);
-      return;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+
+  const cells = useMemo(() => {
+    const arr: (number | null)[] = [];
+    for (let i = 0; i < firstWeekday; i++) arr.push(null);
+    for (let d = 1; d <= daysInMonth; d++) arr.push(d);
+    return arr;
+  }, [firstWeekday, daysInMonth]);
+
+  function changeMonth(delta: number) {
+    let m = month + delta;
+    let y = year;
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    } else if (m > 11) {
+      m = 0;
+      y += 1;
     }
-    setExpanded(sessionId);
-    if (!details[sessionId]) {
-      const { data } = await supabase
-        .from("session_exercises")
-        .select("*, exercises(*)")
-        .eq("session_id", sessionId);
-      setDetails((prev) => ({
-        ...prev,
-        [sessionId]: (data as SessionExerciseRow[]) ?? [],
-      }));
-    }
+    setMonth(m);
+    setYear(y);
   }
 
-  function formatDate(iso: string) {
-    const [y, m, d] = iso.split("-");
-    return `${d}/${m}/${y}`;
+  async function openDay(iso: string) {
+    const session = sessionsByDate[iso];
+    if (!session) return;
+    setSelectedDate(iso);
+    if (session.mode === "descanso") {
+      setDetails([]);
+      return;
+    }
+    setLoadingDetails(true);
+    const { data } = await supabase
+      .from("session_exercises")
+      .select("*, exercises(*)")
+      .eq("session_id", session.id);
+    setDetails((data as SessionExerciseRow[]) ?? []);
+    setLoadingDetails(false);
   }
+
+  const selectedSession = selectedDate ? sessionsByDate[selectedDate] : null;
 
   return (
     <main>
@@ -63,50 +94,82 @@ export default function HistoricoPage() {
         ← Voltar
       </Link>
       <div className="eyebrow">Calistenia</div>
-      <h2>Histórico</h2>
+      <h2>Registos</h2>
 
-      {loading && <p className="muted">A carregar...</p>}
-      {!loading && sessions.length === 0 && (
-        <p className="muted">Ainda sem treinos registados.</p>
-      )}
+      <div className="calendar-nav">
+        <button onClick={() => changeMonth(-1)}>←</button>
+        <strong>
+          {new Date(year, month, 1).toLocaleDateString("pt-PT", {
+            month: "long",
+            year: "numeric",
+          })}
+        </strong>
+        <button onClick={() => changeMonth(1)}>→</button>
+      </div>
 
-      {sessions.map((s) => (
-        <div key={s.id} className="card">
-          <div
-            className="session-item"
-            style={{ cursor: "pointer", border: "none", padding: 0 }}
-            onClick={() => toggleExpand(s.id)}
-          >
-            <div>
-              <span className="session-date">{formatDate(s.date)}</span>{" "}
-              <span className={`tag ${s.mode}`}>{s.mode}</span>
-            </div>
-            <div>
-              {s.overall_rating && (
-                <span className="exercise-target">{s.overall_rating}/10</span>
-              )}
-            </div>
+      <div className="calendar-grid">
+        {WEEKDAYS.map((w, i) => (
+          <div key={i} className="calendar-weekday">
+            {w}
           </div>
-          {s.note && <p className="muted" style={{ marginTop: 8 }}>{s.note}</p>}
-
-          {expanded === s.id && (
-            <div style={{ marginTop: 10 }}>
-              {(details[s.id] ?? []).map((row) => (
-                <div key={row.id} className="exercise-row">
-                  <span className="exercise-name">{row.exercises?.name}</span>
-                  <span className="exercise-target">
-                    {row.reps_per_set.join("-")}
-                    {row.rating ? ` · ${row.rating}/10` : ""}
-                  </span>
-                </div>
-              ))}
-              {(details[s.id] ?? []).length === 0 && (
-                <p className="muted">Sem exercícios registados neste dia.</p>
+        ))}
+        {cells.map((day, i) => {
+          if (day === null) return <div key={i} className="calendar-day empty" />;
+          const iso = isoOf(year, month, day);
+          const s = sessionsByDate[iso];
+          const classes = [
+            "calendar-day",
+            s?.mode === "descanso" ? "descanso" : "",
+            s && s.mode !== "descanso" ? "treino" : "",
+            selectedDate === iso ? "selected" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return (
+            <div key={i} className={classes} onClick={() => openDay(iso)}>
+              <div>{day}</div>
+              {s?.mode === "descanso" && <div>😴</div>}
+              {s && s.mode !== "descanso" && s.overall_rating && (
+                <div style={{ fontSize: 10 }}>{s.overall_rating}/10</div>
               )}
             </div>
+          );
+        })}
+      </div>
+
+      {selectedSession && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <strong>{selectedDate}</strong>{" "}
+          <span className={`tag ${selectedSession.mode}`}>{selectedSession.mode}</span>
+
+          {selectedSession.mode === "descanso" && (
+            <p className="muted" style={{ marginTop: 8 }}>
+              Dia de descanso.
+            </p>
+          )}
+
+          {selectedSession.mode !== "descanso" && (
+            <>
+              {loadingDetails && <p className="muted">A carregar...</p>}
+              {!loadingDetails &&
+                details.map((row) => (
+                  <div key={row.id} className="exercise-row">
+                    <span className="exercise-name">{row.exercises?.name}</span>
+                    <span className="exercise-target">
+                      {row.reps_per_set.join("-")}
+                      {row.rating !== null ? ` · ${row.rating}/10` : ""}
+                    </span>
+                  </div>
+                ))}
+              {selectedSession.plan_change_note && (
+                <p className="muted" style={{ marginTop: 10 }}>
+                  Pedido de alteração: {selectedSession.plan_change_note}
+                </p>
+              )}
+            </>
           )}
         </div>
-      ))}
+      )}
     </main>
   );
 }

@@ -288,3 +288,257 @@ button.primary:disabled {
   font-size: 13px;
   margin-top: 8px;
 }
+
+/* Ilustrações animadas dos exercícios: o tronco acompanha sempre o membro que se mexe */
+@keyframes bob-body {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@keyframes swing-arm {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes swing-legs {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+.pose-flexao-body,
+.pose-dips-body,
+.pose-barra-body,
+.pose-elevacao-body {
+  animation: bob-body 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pose-pique-arms,
+.pose-tricep-forearm,
+.pose-toalha-arm {
+  animation: swing-arm 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: top;
+}
+
+.pose-abdominal-legs,
+.pose-frog-legs {
+  animation: swing-legs 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: left;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.done-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: var(--moss);
+}
+
+.done-toggle.done {
+  background: var(--moss);
+  border-color: var(--moss);
+  color: var(--cream);
+}
+
+.exercise-name-strike {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.exercise-card {
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.exercise-card.faded {
+  opacity: 0.5;
+}
+
+.video-link {
+  font-size: 12px;
+  color: var(--ember);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.score-btn {
+  padding: 8px 0;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  cursor: pointer;
+  font-weight: 700;
+  font-family: "Courier New", monospace;
+}
+
+.score-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--cream);
+}
+
+.final-screen {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.final-top {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.final-center {
+  font-family: "Anton", Arial, sans-serif;
+  font-size: 48px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+}
+
+.final-bottom {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.calendar-day.empty {
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-day.treino {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.calendar-day.descanso {
+  background: var(--moss);
+  color: var(--cream);
+  border-color: var(--moss);
+}
+
+.calendar-day.selected {
+  outline: 3px solid var(--ember);
+  outline-offset: -3px;
+}
+
+.calendar-day.blocked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.calendar-nav button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.stat-value {
+  font-family: "Anton", Arial, sans-serif;
+  font-size: 24px;
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
