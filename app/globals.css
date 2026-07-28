@@ -83,7 +83,7 @@ a {
   text-align: center;
   padding: 22px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 3px;
   font-family: "Anton", Arial, sans-serif;
   font-size: 20px;
   letter-spacing: 0.02em;
@@ -114,7 +114,7 @@ a {
   align-items: center;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   padding: 16px 18px;
   margin-bottom: 10px;
   text-decoration: none;
@@ -130,7 +130,7 @@ a {
 
 .card {
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   padding: 16px;
   margin-bottom: 14px;
   background: var(--paper);
@@ -154,7 +154,7 @@ a {
   text-transform: uppercase;
   font-size: 13px;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
 .tab.active {
@@ -208,7 +208,7 @@ select {
   border: 1px solid var(--line);
   color: var(--ink);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 3px;
   font-size: 15px;
   font-family: inherit;
 }
@@ -228,7 +228,7 @@ button.primary {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 15px;
-  border-radius: 6px;
+  border-radius: 3px;
   cursor: pointer;
   margin-top: 20px;
   font-family: "Anton", Arial, sans-serif;
@@ -454,7 +454,7 @@ button.primary:disabled {
 
 .calendar-day {
   aspect-ratio: 1;
-  border-radius: 5px;
+  border-radius: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -519,24 +519,24 @@ button.primary:disabled {
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .stat-box {
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 12px;
+  border-radius: 3px;
+  padding: 10px 12px;
 }
 
 .stat-value {
   font-family: "Anton", Arial, sans-serif;
-  font-size: 24px;
+  font-size: 19px;
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 700;
@@ -545,7 +545,7 @@ button.primary:disabled {
 
 .chart-card {
   background: #1b1210;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 16px 8px 8px;
   margin-bottom: 20px;
 }
