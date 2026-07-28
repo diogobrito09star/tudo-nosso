@@ -21,7 +21,6 @@ export interface SessionExerciseInput {
 
 export interface Session {
   id: string;
-  profile_id: string;
   date: string;
   mode: SessionMode;
   overall_rating: number | null;

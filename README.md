@@ -6,34 +6,35 @@ construída para o treino que o Diogo desenhou.
 ## Arquitetura
 
 - **Next.js 14 (App Router, TypeScript)** — frontend e rotas.
-- **Supabase** — base de dados Postgres, autenticação (magic link por email) e
-  Row Level Security (cada pessoa só vê os seus próprios dados).
+- **Supabase** — base de dados Postgres. Sem autenticação, acesso aberto
+  (papel `anon`), pensado para um pequeno grupo de utilizadores de confiança
+  (o Diogo e o amigo), não para uso público.
 - **Vercel** — deploy e hosting.
 
 ### Modelo de dados
 
-- `profiles` — um registo por utilizador autenticado.
 - `exercises` — tabela de referência com o plano de exercícios (rua, casa ou
   ambos), séries e repetições alvo.
 - `sessions` — uma sessão de treino por dia (rua, casa ou descanso), com
-  avaliação geral e notas. Único por (utilizador, data).
+  avaliação geral e notas. Único por data (não há separação por utilizador).
 - `session_exercises` — o registo de cada exercício dentro de uma sessão
   (repetições por série, avaliação individual).
 
-### Autenticação
+### Sem login
 
-Decisão: autenticação real desde o início (magic link, sem passwords), mas sem
-ecrãs de gestão de conta. Isto evita ter de reescrever a estrutura da base de
-dados se mais pessoas vierem a usar a plataforma, sem gastar tempo em
-funcionalidades que não são precisas agora (registo, recuperação de password).
+Decisão: sem autenticação, por pedido explícito. Isto simplifica tudo, mas tem
+um custo real a saber: os dados ficam abertos a quem tiver o link do site
+(não há separação por conta nem proteção de escrita). Aceitável para um
+projeto pessoal entre duas pessoas de confiança, mas se um dia isto crescer
+para mais gente, a autenticação (que já esteve implementada numa versão
+anterior) tem de voltar.
 
 ## Estrutura de páginas
 
-- `/login` — pedir o link de acesso por email.
-- `/auth/callback` — troca o link mágico pela sessão e garante que existe um
-  perfil.
-- `/registar` — registar o treino do dia (rua, casa ou descanso).
+- `/` — ecrã inicial: treinar, marcar descanso, ver registos, ver evolução.
+- `/registar` — registar o treino do dia (rua ou casa).
 - `/historico` — lista de treinos anteriores, com detalhe por exercício.
+- `/evolucao` — reservado para os gráficos de evolução (ainda por construir).
 
 ## Como correr localmente
 
@@ -50,15 +51,14 @@ quiseres apontar para outro projeto Supabase, cria um `.env.local` a partir de
 ## Como testar a funcionalidade principal
 
 1. Corre `npm run dev` e abre `http://localhost:3000`.
-2. Entra com o teu email (vais receber um link mágico).
-3. Em "Registar", escolhe o modo (rua, casa ou descanso), preenche as
-   repetições por série de cada exercício e guarda.
-4. Em "Histórico", confirma que a sessão aparece e que os detalhes por
+2. No ecrã inicial, clica em "Vou treinar", escolhe rua ou casa, preenche as
+   repetições por série de cada exercício e guarda. Ou clica em "Hoje é
+   descanso" para marcar o dia diretamente.
+3. Em "Ver registos", confirma que a sessão aparece e que os detalhes por
    exercício abrem ao clicar.
 
 ## Próximos passos possíveis
 
+- Gráficos de evolução por exercício (página `/evolucao` já existe como
+  placeholder).
 - Vista de calendário no histórico (mês a mês, com média por dia).
-- Gráfico de evolução por exercício ao longo do tempo.
-- Convite explícito de um segundo utilizador (o amigo), já suportado pela
-  estrutura de dados, falta só o fluxo de convite.

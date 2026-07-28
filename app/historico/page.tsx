@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import BottomNav from "@/app/components/BottomNav";
 import type { Session, Exercise } from "@/lib/types";
 
 interface SessionExerciseRow {
@@ -16,7 +15,6 @@ interface SessionExerciseRow {
 }
 
 export default function HistoricoPage() {
-  const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [details, setDetails] = useState<Record<string, SessionExerciseRow[]>>(
@@ -26,11 +24,6 @@ export default function HistoricoPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        router.replace("/login");
-        return;
-      }
       const { data } = await supabase
         .from("sessions")
         .select("*")
@@ -39,7 +32,7 @@ export default function HistoricoPage() {
       setLoading(false);
     }
     load();
-  }, [router]);
+  }, []);
 
   async function toggleExpand(sessionId: string) {
     if (expanded === sessionId) {
@@ -66,8 +59,11 @@ export default function HistoricoPage() {
 
   return (
     <main>
-      <div className="eyebrow">Tudo Nosso</div>
-      <h1>Histórico</h1>
+      <Link href="/" className="back-link">
+        ← Voltar
+      </Link>
+      <div className="eyebrow">Calistenia</div>
+      <h2>Histórico</h2>
 
       {loading && <p className="muted">A carregar...</p>}
       {!loading && sessions.length === 0 && (
@@ -111,8 +107,6 @@ export default function HistoricoPage() {
           )}
         </div>
       ))}
-
-      <BottomNav />
     </main>
   );
 }

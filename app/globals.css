@@ -1,9 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap");
+
 :root {
-  --ink: #1b1b19;
-  --bone: #ede8dd;
-  --amber: #e2a53d;
-  --moss: #46584a;
-  --line: #3a3a36;
+  --cream: #f4f1ea;
+  --ink: #211d18;
+  --ember: #c9622f;
+  --moss: #4b7062;
+  --paper: #ffffff;
+  --line: #e3ddd0;
+  --muted: #8a8477;
   --danger: #b5493a;
 }
 
@@ -15,51 +19,121 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background: var(--ink);
-  color: var(--bone);
-  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: "Inter", -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
 }
 
 .app-shell {
   min-height: 100vh;
   max-width: 480px;
   margin: 0 auto;
-  padding: 24px 20px 64px;
+  padding: 32px 20px 48px;
   position: relative;
 }
 
 h1,
-h2,
-h3 {
-  font-family: "Arial Narrow", Arial, sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+h2 {
+  font-family: "Anton", "Arial Narrow", Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
-  margin: 0 0 6px;
+  margin: 0 0 20px;
+  line-height: 0.95;
 }
 
 h1 {
-  font-size: 30px;
-  border-bottom: 3px solid var(--amber);
-  padding-bottom: 10px;
-  margin-bottom: 18px;
+  font-size: 44px;
+}
+
+h2 {
+  font-size: 26px;
+  margin-bottom: 14px;
 }
 
 .eyebrow {
-  font-size: 12px;
-  letter-spacing: 0.15em;
+  font-size: 13px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--ember);
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-family: "Courier New", monospace;
+}
+
+a {
+  color: inherit;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.action-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 22px 18px;
+  border: none;
+  border-radius: 6px;
+  font-family: "Anton", Arial, sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+
+.action-btn.dark {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.action-btn.moss {
+  background: var(--moss);
+  color: var(--cream);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav-row .arrow {
+  color: var(--muted);
+  font-size: 18px;
 }
 
 .card {
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 16px;
   margin-bottom: 14px;
-  background: #212120;
+  background: var(--paper);
 }
 
 .tabs {
@@ -70,23 +144,23 @@ h1 {
 
 .tab {
   flex: 1;
-  padding: 10px 0;
+  padding: 12px 0;
   text-align: center;
   border: 1px solid var(--line);
-  background: transparent;
-  color: var(--bone);
+  background: var(--paper);
+  color: var(--ink);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   font-size: 13px;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .tab.active {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: var(--ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--cream);
 }
 
 .exercise-row {
@@ -108,7 +182,7 @@ h1 {
 .exercise-target {
   font-variant-numeric: tabular-nums;
   font-family: "Courier New", monospace;
-  color: var(--amber);
+  color: var(--ember);
   font-size: 14px;
 }
 
@@ -117,9 +191,10 @@ label {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #b8b3a6;
+  color: var(--muted);
   margin-bottom: 4px;
   margin-top: 12px;
+  font-weight: 600;
 }
 
 input[type="text"],
@@ -129,11 +204,11 @@ input[type="email"],
 textarea,
 select {
   width: 100%;
-  background: #171715;
+  background: var(--paper);
   border: 1px solid var(--line);
-  color: var(--bone);
+  color: var(--ink);
   padding: 10px;
-  border-radius: 3px;
+  border-radius: 5px;
   font-size: 15px;
   font-family: inherit;
 }
@@ -145,71 +220,23 @@ textarea {
 
 button.primary {
   width: 100%;
-  padding: 14px;
-  background: var(--amber);
+  padding: 16px;
+  background: var(--ink);
   border: none;
-  color: var(--ink);
+  color: var(--cream);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 15px;
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
   margin-top: 20px;
+  font-family: "Anton", Arial, sans-serif;
 }
 
 button.primary:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-button.ghost {
-  width: 100%;
-  padding: 12px;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--bone);
-  font-weight: 600;
-  border-radius: 3px;
-  cursor: pointer;
-  margin-top: 8px;
-}
-
-.reps-input-row {
-  display: flex;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.reps-input-row input {
-  text-align: center;
-  font-family: "Courier New", monospace;
-}
-
-.nav-bottom {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  border-top: 1px solid var(--line);
-  background: var(--ink);
-}
-
-.nav-bottom a {
-  flex: 1;
-  text-align: center;
-  padding: 14px 0;
-  color: #b8b3a6;
-  text-decoration: none;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-
-.nav-bottom a.active {
-  color: var(--amber);
 }
 
 .session-item {
@@ -231,28 +258,28 @@ button.ghost {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 3px 8px;
-  border-radius: 2px;
+  border-radius: 3px;
   font-weight: 700;
 }
 
 .tag.rua {
-  background: var(--amber);
-  color: var(--ink);
+  background: var(--ember);
+  color: var(--cream);
 }
 
 .tag.casa {
   background: var(--moss);
-  color: var(--bone);
+  color: var(--cream);
 }
 
 .tag.descanso {
   background: transparent;
   border: 1px solid var(--line);
-  color: #b8b3a6;
+  color: var(--muted);
 }
 
 .muted {
-  color: #8f8a7d;
+  color: var(--muted);
   font-size: 13px;
 }
 
