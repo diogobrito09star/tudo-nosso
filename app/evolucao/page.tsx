@@ -81,6 +81,10 @@ export default function EvolucaoPage() {
   const trainingSessions = sessions.filter((s) => s.mode !== "descanso" && s.mode !== "magoado");
   const restSessions = sessions.filter((s) => s.mode === "descanso");
   const magoadoSessions = sessions.filter((s) => s.mode === "magoado");
+  const injuredTrainingSessions = sessions.filter(
+    (s) => s.mode !== "descanso" && s.mode !== "magoado" && s.injured
+  );
+  const totalInjuryDays = magoadoSessions.length + injuredTrainingSessions.length;
 
   const allDates = sessions.map((s) => s.date).sort();
   const firstDate = allDates[0];
@@ -367,7 +371,7 @@ export default function EvolucaoPage() {
           <div className="stat-label">Descansos</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value">{magoadoSessions.length}</div>
+          <div className="stat-value">{totalInjuryDays}</div>
           <div className="stat-label">Lesões</div>
         </div>
         <div className="stat-box" style={{ gridColumn: "span 2" }}>

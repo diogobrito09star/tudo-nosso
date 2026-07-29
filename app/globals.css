@@ -471,6 +471,7 @@ button.primary:disabled {
   cursor: pointer;
   border: 1px solid var(--line);
   background: var(--paper);
+  position: relative;
 }
 
 .calendar-day.empty {
@@ -504,9 +505,9 @@ button.primary:disabled {
 }
 
 .calendar-day.band-high {
-  background: #2f6a72;
+  background: #2c3f6e;
   color: var(--cream);
-  border-color: #2f6a72;
+  border-color: #2c3f6e;
 }
 
 .calendar-day.descanso {
@@ -519,13 +520,29 @@ button.primary:disabled {
   background: #ffffff;
   color: var(--danger);
   border: 2px solid var(--danger);
-  position: relative;
 }
 
 .magoado-cross {
   font-weight: 800;
   font-size: 13px;
   line-height: 1;
+}
+
+.injury-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--danger);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--danger);
 }
 
 .calendar-day.selected {

@@ -139,7 +139,8 @@ export default function HistoricoPage() {
             <div key={i} className={classes} onClick={() => openDay(iso)}>
               <span>{day}</span>
               {s?.mode === "descanso" && <span>😴</span>}
-              {s?.mode === "magoado" && <span className="magoado-cross">✕</span>}
+              {s?.mode === "magoado" && <span className="magoado-cross">✚</span>}
+              {isTraining && s.injured && <span className="injury-badge">✚</span>}
               {isTraining && s.overall_rating && (
                 <span style={{ fontSize: 10 }}>{s.overall_rating}/10</span>
               )}

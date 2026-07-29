@@ -33,6 +33,7 @@ export default function RegistarPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exState, setExState] = useState<Record<string, ExerciseState>>({});
   const [planChangeNote, setPlanChangeNote] = useState("");
+  const [injuredThisSession, setInjuredThisSession] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +94,7 @@ export default function RegistarPage() {
           pre_state: preState,
           overall_rating: overallRating,
           plan_change_note: planChangeNote || null,
+          injured: injuredThisSession,
         },
         { onConflict: "date" }
       )
@@ -322,6 +324,25 @@ export default function RegistarPage() {
             </div>
           );
         })}
+
+        <button
+          type="button"
+          onClick={() => setInjuredThisSession((v) => !v)}
+          style={{
+            width: "100%",
+            padding: 14,
+            marginTop: 6,
+            marginBottom: 6,
+            borderRadius: 3,
+            fontWeight: 700,
+            cursor: "pointer",
+            background: injuredThisSession ? "#ffffff" : "transparent",
+            border: injuredThisSession ? "2px solid var(--danger)" : "1px solid var(--line)",
+            color: injuredThisSession ? "var(--danger)" : "var(--ink)",
+          }}
+        >
+          {injuredThisSession ? "✚ Magoei-me neste treino" : "Magoei-me neste treino"}
+        </button>
 
         <label htmlFor="planChange">Queres fazer alguma alteração ao plano?</label>
         <textarea

@@ -162,7 +162,7 @@ export default function DescansoPage() {
           return (
             <div key={i} className={classes} onClick={() => !blocked && toggleDay(day)}>
               <span>{day}</span>
-              {isMagoado && <span className="magoado-cross">✕</span>}
+              {isMagoado && <span className="magoado-cross">✚</span>}
             </div>
           );
         })}

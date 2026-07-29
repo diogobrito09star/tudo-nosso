@@ -34,7 +34,7 @@ export default function Home() {
       <div className="eyebrow">Calistenia</div>
       <h1>Plano de treino</h1>
 
-      {streak > 0 && (
+      {streak >= 2 && (
         <p style={{ marginTop: -12, marginBottom: 22, fontWeight: 700 }}>
           🔥 {streak} {streak === 1 ? "dia seguido" : "dias seguidos"}
         </p>

@@ -1,6 +1,6 @@
 export type ExerciseMode = "rua" | "casa" | "ambos";
 export type SessionMode = "rua" | "casa" | "descanso" | "magoado";
-export type PreState = "bem" | "beca_partido" | "fodidinho" | "fodido";
+export type PreState = "bem" | "beca_partido" | "um_bocadinho_fodidinho" | "fodidinho" | "fodido";
 
 export interface Exercise {
   id: string;
@@ -33,6 +33,7 @@ export interface Session {
   overall_rating: number | null;
   note: string | null;
   plan_change_note: string | null;
+  injured: boolean;
   created_at: string;
 }
 
@@ -46,6 +47,7 @@ export interface WeighIn {
 export const PRE_STATE_LABEL: Record<PreState, string> = {
   bem: "Estou bem",
   beca_partido: "Estou uma beca partido",
+  um_bocadinho_fodidinho: "Estou um bocadinho fodidinho",
   fodidinho: "Estou fodidinho",
   fodido: "Estou todo fodido",
 };
