@@ -24,6 +24,14 @@ function isoOf(year: number, month: number, day: number) {
   return `${year}-${pad(month + 1)}-${pad(day)}`;
 }
 
+function bandClass(rating: number | null): string {
+  if (rating === null) return "";
+  if (rating <= 2) return "band-low";
+  if (rating <= 5) return "band-midlow";
+  if (rating <= 7) return "band-midhigh";
+  return "band-high";
+}
+
 export default function HistoricoPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
@@ -73,7 +81,7 @@ export default function HistoricoPage() {
     const session = sessionsByDate[iso];
     if (!session) return;
     setSelectedDate(iso);
-    if (session.mode === "descanso") {
+    if (session.mode === "descanso" || session.mode === "magoado") {
       setDetails([]);
       return;
     }
@@ -117,20 +125,23 @@ export default function HistoricoPage() {
           if (day === null) return <div key={i} className="calendar-day empty" />;
           const iso = isoOf(year, month, day);
           const s = sessionsByDate[iso];
+          const isTraining = !!s && s.mode !== "descanso" && s.mode !== "magoado";
           const classes = [
             "calendar-day",
             s?.mode === "descanso" ? "descanso" : "",
-            s && s.mode !== "descanso" ? "treino" : "",
+            s?.mode === "magoado" ? "magoado" : "",
+            isTraining ? bandClass(s.overall_rating) || "treino" : "",
             selectedDate === iso ? "selected" : "",
           ]
             .filter(Boolean)
             .join(" ");
           return (
             <div key={i} className={classes} onClick={() => openDay(iso)}>
-              <div>{day}</div>
-              {s?.mode === "descanso" && <div>😴</div>}
-              {s && s.mode !== "descanso" && s.overall_rating && (
-                <div style={{ fontSize: 10 }}>{s.overall_rating}/10</div>
+              <span>{day}</span>
+              {s?.mode === "descanso" && <span>😴</span>}
+              {s?.mode === "magoado" && <span className="magoado-cross">✕</span>}
+              {isTraining && s.overall_rating && (
+                <span style={{ fontSize: 10 }}>{s.overall_rating}/10</span>
               )}
             </div>
           );
@@ -142,13 +153,13 @@ export default function HistoricoPage() {
           <strong>{selectedDate}</strong>{" "}
           <span className={`tag ${selectedSession.mode}`}>{selectedSession.mode}</span>
 
-          {selectedSession.mode === "descanso" && (
+          {(selectedSession.mode === "descanso" || selectedSession.mode === "magoado") && (
             <p className="muted" style={{ marginTop: 8 }}>
-              Dia de descanso.
+              {selectedSession.mode === "descanso" ? "Dia de descanso." : "Dia em que se magoou."}
             </p>
           )}
 
-          {selectedSession.mode !== "descanso" && (
+          {selectedSession.mode !== "descanso" && selectedSession.mode !== "magoado" && (
             <>
               {loadingDetails && <p className="muted">A carregar...</p>}
               {!loadingDetails &&

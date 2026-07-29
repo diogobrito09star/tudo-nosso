@@ -181,7 +181,9 @@ a {
 
 .exercise-target {
   font-variant-numeric: tabular-nums;
-  font-family: "Courier New", monospace;
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--ember);
   font-size: 14px;
 }
@@ -276,6 +278,12 @@ button.primary:disabled {
   background: transparent;
   border: 1px solid var(--line);
   color: var(--muted);
+}
+
+.tag.magoado {
+  background: #ffffff;
+  border: 1px solid var(--danger);
+  color: var(--danger);
 }
 
 .muted {
@@ -477,10 +485,47 @@ button.primary:disabled {
   border-color: var(--ink);
 }
 
+.calendar-day.band-low {
+  background: #7a2e2a;
+  color: var(--cream);
+  border-color: #7a2e2a;
+}
+
+.calendar-day.band-midlow {
+  background: var(--ember);
+  color: var(--cream);
+  border-color: var(--ember);
+}
+
+.calendar-day.band-midhigh {
+  background: #c99a2e;
+  color: var(--ink);
+  border-color: #c99a2e;
+}
+
+.calendar-day.band-high {
+  background: #2f6a72;
+  color: var(--cream);
+  border-color: #2f6a72;
+}
+
 .calendar-day.descanso {
   background: var(--moss);
   color: var(--cream);
   border-color: var(--moss);
+}
+
+.calendar-day.magoado {
+  background: #ffffff;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  position: relative;
+}
+
+.magoado-cross {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .calendar-day.selected {

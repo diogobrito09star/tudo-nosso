@@ -23,6 +23,7 @@ export default function DescansoPage() {
   const [month, setMonth] = useState(today.getMonth());
   const [sessionsByDate, setSessionsByDate] = useState<Record<string, Session>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [restType, setRestType] = useState<"descanso" | "magoado">("descanso");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function DescansoPage() {
   function toggleDay(day: number) {
     const iso = isoOf(year, month, day);
     const existing = sessionsByDate[iso];
-    if (existing && existing.mode !== "descanso") return; // bloqueado, já tem treino
+    if (existing && existing.mode !== "descanso" && existing.mode !== "magoado") return; // bloqueado, já tem treino
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(iso)) next.delete(iso);
@@ -81,7 +82,7 @@ export default function DescansoPage() {
     setSaving(true);
     const rows = Array.from(selected).map((date) => ({
       date,
-      mode: "descanso" as const,
+      mode: restType,
       overall_rating: null,
     }));
     await supabase.from("sessions").upsert(rows, { onConflict: "date" });
@@ -100,6 +101,29 @@ export default function DescansoPage() {
         Podes marcar vários dias de uma vez. Dias já com treino registado
         ficam bloqueados.
       </p>
+
+      <div className="tabs">
+        <button
+          type="button"
+          className={`tab ${restType === "descanso" ? "active" : ""}`}
+          style={restType === "descanso" ? { background: "var(--moss)", borderColor: "var(--moss)" } : undefined}
+          onClick={() => setRestType("descanso")}
+        >
+          Descanso
+        </button>
+        <button
+          type="button"
+          className={`tab ${restType === "magoado" ? "active" : ""}`}
+          style={
+            restType === "magoado"
+              ? { background: "#ffffff", borderColor: "var(--danger)", color: "var(--danger)" }
+              : undefined
+          }
+          onClick={() => setRestType("magoado")}
+        >
+          Já me rasguei todo
+        </button>
+      </div>
 
       <div className="calendar-nav">
         <button onClick={() => changeMonth(-1)}>←</button>
@@ -122,27 +146,30 @@ export default function DescansoPage() {
           if (day === null) return <div key={i} className="calendar-day empty" />;
           const iso = isoOf(year, month, day);
           const existing = sessionsByDate[iso];
-          const blocked = !!existing && existing.mode !== "descanso";
+          const blocked = !!existing && existing.mode !== "descanso" && existing.mode !== "magoado";
           const isDescanso = existing?.mode === "descanso";
+          const isMagoado = existing?.mode === "magoado";
           const isSelected = selected.has(iso);
           const classes = [
             "calendar-day",
             blocked ? "blocked treino" : "",
             isDescanso ? "descanso" : "",
+            isMagoado ? "magoado" : "",
             isSelected ? "selected" : "",
           ]
             .filter(Boolean)
             .join(" ");
           return (
             <div key={i} className={classes} onClick={() => !blocked && toggleDay(day)}>
-              {day}
+              <span>{day}</span>
+              {isMagoado && <span className="magoado-cross">✕</span>}
             </div>
           );
         })}
       </div>
 
       <button className="primary" onClick={handleSave} disabled={saving}>
-        {saving ? "A guardar..." : "Guardar descansos"}
+        {saving ? "A guardar..." : restType === "magoado" ? "Guardar dias magoado" : "Guardar descansos"}
       </button>
     </main>
   );

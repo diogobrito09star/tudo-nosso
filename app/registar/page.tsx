@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import ExerciseIllustration from "@/app/components/ExerciseIllustration";
 import { POSE_BY_KEY } from "@/lib/poses";
 import type { Exercise, PreState } from "@/lib/types";
+import { PRE_STATE_LABEL } from "@/lib/types";
 
 type Step = "pre_state" | "mode" | "plan" | "rating" | "final";
 type Mode = "rua" | "casa";
@@ -23,12 +24,6 @@ interface ExerciseState {
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
-
-const PRE_STATE_LABEL: Record<PreState, string> = {
-  bem: "Estou bem",
-  beca_partido: "Estou uma beca partido",
-  fodido: "Estou todo fodido",
-};
 
 export default function RegistarPage() {
   const router = useRouter();
@@ -81,8 +76,9 @@ export default function RegistarPage() {
     setError(null);
 
     const ratings = visibleExercises
-      .map((ex) => Number(exState[ex.id]?.rating))
-      .filter((n) => !Number.isNaN(n) && n > 0);
+      .map((ex) => exState[ex.id]?.rating)
+      .filter((r): r is string => r !== undefined && r !== "")
+      .map((r) => Number(r));
     const overallRating =
       ratings.length > 0
         ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length)

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session, Exercise, WeighIn } from "@/lib/types";
+import { PRE_STATE_LABEL } from "@/lib/types";
 
 interface ExerciseLogRow {
   id: string;
@@ -77,8 +78,9 @@ export default function EvolucaoPage() {
     load();
   }, []);
 
-  const trainingSessions = sessions.filter((s) => s.mode !== "descanso");
+  const trainingSessions = sessions.filter((s) => s.mode !== "descanso" && s.mode !== "magoado");
   const restSessions = sessions.filter((s) => s.mode === "descanso");
+  const magoadoSessions = sessions.filter((s) => s.mode === "magoado");
 
   const allDates = sessions.map((s) => s.date).sort();
   const firstDate = allDates[0];
@@ -165,6 +167,37 @@ export default function EvolucaoPage() {
         style={{ cursor: "pointer" }}
         onClick={() => handleGeneralPointClick(payload)}
       />
+    );
+  }
+
+  function DayTooltip({ active, payload }: any) {
+    if (!active || !payload || !payload[0]) return null;
+    const date: string = payload[0].payload.date;
+    const session = sessions.find((s) => s.date === date);
+    const dayRatings = logs
+      .filter((l) => l.sessions?.date === date && l.rating !== null)
+      .map((l) => l.rating as number);
+    const best = dayRatings.length ? Math.max(...dayRatings) : null;
+    const worst = dayRatings.length ? Math.min(...dayRatings) : null;
+    return (
+      <div
+        style={{
+          padding: 10,
+          fontSize: 12,
+          background: "#1b1210",
+          border: "1px solid #3a2e29",
+          borderRadius: 6,
+          color: "#f4f1ea",
+        }}
+      >
+        <div>Média: {fmt1(payload[0].payload.value)}</div>
+        <div>Melhor nota: {fmt1(best)}</div>
+        <div>Pior nota: {fmt1(worst)}</div>
+        <div>
+          Antes do treino:{" "}
+          {session?.pre_state ? PRE_STATE_LABEL[session.pre_state] : "—"}
+        </div>
+      </div>
     );
   }
 
@@ -333,6 +366,10 @@ export default function EvolucaoPage() {
           <div className="stat-value">{restSessions.length}</div>
           <div className="stat-label">Descansos</div>
         </div>
+        <div className="stat-box">
+          <div className="stat-value">{magoadoSessions.length}</div>
+          <div className="stat-label">Lesões</div>
+        </div>
         <div className="stat-box" style={{ gridColumn: "span 2" }}>
           <div className="stat-value">{fmt1(mediaDescansoSemana)}</div>
           <div className="stat-label">Média de descanso / semana</div>
@@ -398,7 +435,7 @@ export default function EvolucaoPage() {
             <XAxis dataKey={generalView === "dia" ? "date" : "key"} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             {generalView !== "dia" && <Tooltip content={<BucketTooltip />} />}
-            {generalView === "dia" && <Tooltip contentStyle={{ background: "#1b1210", border: "1px solid #3a2e29", color: "#f4f1ea" }} />}
+            {generalView === "dia" && <Tooltip content={<DayTooltip />} />}
             <Area
               type="monotone"
               dataKey="value"
