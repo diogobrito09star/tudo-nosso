@@ -46,6 +46,25 @@ function PoseElevacao() {
 }
 
 /** De pé, compacto, entre barras, braço quase vertical. Peito + tricep. */
+/** Pendurado numa barra, pega mais estreita, sobe. Foco nos braços (bicep). */
+function PoseChinups() {
+  return (
+    <g>
+      <line x1="30" y1="20" x2="130" y2="20" stroke={STROKE} strokeWidth="6" strokeLinecap="round" />
+      <g className="pose-chinups-body">
+        <Head cx={80} cy={50} />
+        <line x1="80" y1="60" x2="80" y2="110" stroke={STROKE} strokeWidth="6" strokeLinecap="round" />
+        <ellipse cx="68" cy="45" rx="10" ry="20" fill={HIGHLIGHT} opacity="0.4" />
+        <ellipse cx="92" cy="45" rx="10" ry="20" fill={HIGHLIGHT} opacity="0.4" />
+        <g className="pose-chinups-arms">
+          <line x1="68" y1="22" x2="72" y2="65" stroke={STROKE} strokeWidth="5" strokeLinecap="round" />
+          <line x1="92" y1="22" x2="88" y2="65" stroke={STROKE} strokeWidth="5" strokeLinecap="round" />
+        </g>
+      </g>
+    </g>
+  );
+}
+
 function PoseDips() {
   return (
     <g>
@@ -161,6 +180,7 @@ function PoseFrog() {
 const POSES: Record<string, () => JSX.Element> = {
   flexao: PoseFlexao,
   elevacao: PoseElevacao,
+  chinups: PoseChinups,
   dips: PoseDips,
   pique: PosePique,
   barra: PoseBarra,

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session, Exercise } from "@/lib/types";
+import { PRE_STATE_LABEL } from "@/lib/types";
 
 interface SessionExerciseRow {
   id: string;
@@ -130,7 +131,7 @@ export default function HistoricoPage() {
             "calendar-day",
             s?.mode === "descanso" ? "descanso" : "",
             s?.mode === "magoado" ? "magoado" : "",
-            isTraining ? bandClass(s.overall_rating) || "treino" : "",
+            isTraining ? "treino" : "",
             selectedDate === iso ? "selected" : "",
           ]
             .filter(Boolean)
@@ -151,8 +152,13 @@ export default function HistoricoPage() {
 
       {selectedSession && (
         <div className="card" style={{ marginTop: 20 }}>
-          <strong>{selectedDate}</strong>{" "}
-          <span className={`tag ${selectedSession.mode}`}>{selectedSession.mode}</span>
+          <div style={{ marginBottom: 10 }}>
+            <strong>{selectedDate}</strong>{" "}
+            <span className={`tag ${selectedSession.mode}`}>{selectedSession.mode}</span>{" "}
+            {selectedSession.pre_state && (
+              <span className="muted">{PRE_STATE_LABEL[selectedSession.pre_state]}</span>
+            )}
+          </div>
 
           {(selectedSession.mode === "descanso" || selectedSession.mode === "magoado") && (
             <p className="muted" style={{ marginTop: 8 }}>
@@ -164,15 +170,29 @@ export default function HistoricoPage() {
             <>
               {loadingDetails && <p className="muted">A carregar...</p>}
               {!loadingDetails &&
-                details.map((row) => (
-                  <div key={row.id} className="exercise-row">
-                    <span className="exercise-name">{row.exercises?.name}</span>
-                    <span className="exercise-target">
-                      {row.reps_per_set.join("-")}
-                      {row.rating !== null ? ` · ${row.rating}/10` : ""}
-                    </span>
-                  </div>
-                ))}
+                details.map((row) => {
+                  const parts: string[] = [];
+                  if (row.reps_seguidas !== null) parts.push(`${row.reps_seguidas} seguidas`);
+                  if (row.reps_per_set.length > 0) {
+                    parts.push(
+                      row.reps_per_set.map((r, i) => `Série ${i + 1}: ${r}`).join(", ")
+                    );
+                  }
+                  if (row.note) parts.push(row.note);
+                  return (
+                    <div key={row.id} className="exercise-row">
+                      <div>
+                        <div className="exercise-name">{row.exercises?.name}</div>
+                        {parts.length > 0 && (
+                          <div className="muted">{parts.join(" · ")}</div>
+                        )}
+                      </div>
+                      <span className="exercise-target">
+                        {row.rating !== null ? `${row.rating}/10` : "—"}
+                      </span>
+                    </div>
+                  );
+                })}
               {selectedSession.plan_change_note && (
                 <p className="muted" style={{ marginTop: 10 }}>
                   Pedido de alteração: {selectedSession.plan_change_note}

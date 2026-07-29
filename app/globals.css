@@ -331,10 +331,17 @@ button.primary:disabled {
 .pose-flexao-body,
 .pose-dips-body,
 .pose-barra-body,
-.pose-elevacao-body {
+.pose-elevacao-body,
+.pose-chinups-body {
   animation: bob-body 1.8s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
+}
+
+.pose-chinups-arms {
+  animation: swing-arm 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: top;
 }
 
 .pose-pique-arms,

@@ -34,6 +34,7 @@ export default function RegistarPage() {
   const [exState, setExState] = useState<Record<string, ExerciseState>>({});
   const [planChangeNote, setPlanChangeNote] = useState("");
   const [injuredThisSession, setInjuredThisSession] = useState(false);
+  const [injuredAtId, setInjuredAtId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +71,21 @@ export default function RegistarPage() {
       ...prev,
       [id]: { ...ensureState(ex), ...prev[id], ...patch },
     }));
+  }
+
+  function markInjuredHere(exId: string) {
+    setInjuredThisSession(true);
+    setInjuredAtId(exId);
+    const idx = visibleExercises.findIndex((e) => e.id === exId);
+    if (idx === -1) return;
+    setExState((prev) => {
+      const next = { ...prev };
+      for (let i = idx + 1; i < visibleExercises.length; i++) {
+        const laterEx = visibleExercises[i];
+        next[laterEx.id] = { ...ensureState(laterEx), ...next[laterEx.id], done: true };
+      }
+      return next;
+    });
   }
 
   async function handleSave() {
@@ -269,6 +285,26 @@ export default function RegistarPage() {
                     value={s.note}
                     onChange={(e) => updateState(ex.id, { note: e.target.value }, ex)}
                   />
+                  <button
+                    type="button"
+                    onClick={() => markInjuredHere(ex.id)}
+                    style={{
+                      width: "100%",
+                      padding: 12,
+                      marginTop: 10,
+                      borderRadius: 3,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      background: injuredAtId === ex.id ? "#ffffff" : "transparent",
+                      border:
+                        injuredAtId === ex.id
+                          ? "2px solid var(--danger)"
+                          : "1px solid var(--line)",
+                      color: injuredAtId === ex.id ? "var(--danger)" : "var(--ink)",
+                    }}
+                  >
+                    {injuredAtId === ex.id ? "✚ Já me rasguei todo" : "Já me rasguei todo"}
+                  </button>
                 </div>
               )}
             </div>

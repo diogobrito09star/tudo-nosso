@@ -5,6 +5,7 @@ export const POSE_BY_KEY: Record<string, string> = {
   elevacoes: "elevacao",
   dips: "dips",
   dips_adaptado: "dips",
+  chin_ups: "chinups",
   flexao_pique: "pique",
   barra_ao_peito: "barra",
   flexao_tricep: "tricep",

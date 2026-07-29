@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-function computeStreak(dateSet: Set<string>): number {
+function computeStreak(trainingDates: Set<string>): number {
   let streak = 0;
   const cursor = new Date();
-  if (!dateSet.has(cursor.toISOString().slice(0, 10))) {
+  if (!trainingDates.has(cursor.toISOString().slice(0, 10))) {
     cursor.setDate(cursor.getDate() - 1);
   }
-  while (dateSet.has(cursor.toISOString().slice(0, 10))) {
+  while (trainingDates.has(cursor.toISOString().slice(0, 10))) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
@@ -22,9 +22,13 @@ export default function Home() {
 
   useEffect(() => {
     async function loadStreak() {
-      const { data } = await supabase.from("sessions").select("date");
-      const dateSet = new Set((data ?? []).map((r: { date: string }) => r.date));
-      setStreak(computeStreak(dateSet));
+      const { data } = await supabase.from("sessions").select("date, mode");
+      const trainingDates = new Set(
+        (data ?? [])
+          .filter((r: { mode: string }) => r.mode !== "descanso" && r.mode !== "magoado")
+          .map((r: { date: string }) => r.date)
+      );
+      setStreak(computeStreak(trainingDates));
     }
     loadStreak();
   }, []);
