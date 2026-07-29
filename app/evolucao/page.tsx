@@ -371,8 +371,12 @@ export default function EvolucaoPage() {
           <div className="stat-label">Descansos</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value">{totalInjuryDays}</div>
-          <div className="stat-label">Lesões</div>
+          <div className="stat-value">{injuredTrainingSessions.length}</div>
+          <div className="stat-label">Lesões em treino</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-value">{magoadoSessions.length}</div>
+          <div className="stat-label">Descanso por lesão</div>
         </div>
         <div className="stat-box" style={{ gridColumn: "span 2" }}>
           <div className="stat-value">{fmt1(mediaDescansoSemana)}</div>
