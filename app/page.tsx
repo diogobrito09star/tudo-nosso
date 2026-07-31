@@ -57,6 +57,10 @@ export default function Home() {
           <span>Ver registos</span>
           <span className="arrow">→</span>
         </Link>
+        <Link href="/historico" className="nav-row">
+          <span>Adicionar registo</span>
+          <span className="arrow">→</span>
+        </Link>
         <Link href="/evolucao" className="nav-row">
           <span>Ver evolução (gráficos)</span>
           <span className="arrow">→</span>

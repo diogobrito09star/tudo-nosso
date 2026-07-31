@@ -224,9 +224,14 @@ function RegistarInner() {
   if (step === "plan") {
     return (
       <main>
-        <button className="back-link" onClick={() => setStep("mode")} style={{ background: "none", border: "none", cursor: "pointer" }}>
-          ← Voltar
-        </button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <button className="back-link" onClick={() => setStep("mode")} style={{ background: "none", border: "none", cursor: "pointer", marginBottom: 0 }}>
+            ← Voltar
+          </button>
+          <Link href="/" className="back-link" style={{ marginBottom: 0 }}>
+            Voltar ao menu inicial
+          </Link>
+        </div>
         <div className="eyebrow">Calistenia · {mode}</div>
         <h2>Plano de hoje</h2>
 

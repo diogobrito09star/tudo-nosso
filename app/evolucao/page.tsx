@@ -189,6 +189,7 @@ export default function EvolucaoPage() {
 
   function ClickableDot(props: any) {
     const { cx, cy, payload } = props;
+    if (payload?.value === null || payload?.value === undefined) return null;
     return (
       <circle
         cx={cx}
@@ -277,6 +278,62 @@ export default function EvolucaoPage() {
     }))
     .filter((p) => p.date)
     .sort((a, b) => a.date.localeCompare(b.date));
+
+  const exerciseMetricDaily = exerciseSeries
+    .map((p) => ({
+      date: p.date,
+      value: exerciseMetric === "rating" ? p.rating : p.reps,
+    }))
+    .filter((p): p is { date: string; value: number } => p.value !== null);
+
+  const exerciseMonthlyPoints = useMemo(() => {
+    const buckets: Record<string, number[]> = {};
+    exerciseMetricDaily.forEach((p) => {
+      const ym = p.date.slice(0, 7);
+      if (yearFilter && !ym.startsWith(String(yearFilter))) return;
+      buckets[ym] = buckets[ym] ?? [];
+      buckets[ym].push(p.value);
+    });
+    return Object.entries(buckets)
+      .map(([ym, vals]) => ({ key: ym, value: avg(vals) ?? 0 }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [exerciseMetricDaily, yearFilter]);
+
+  const exerciseYearlyPoints = useMemo(() => {
+    const buckets: Record<string, number[]> = {};
+    exerciseMetricDaily.forEach((p) => {
+      const y = p.date.slice(0, 4);
+      buckets[y] = buckets[y] ?? [];
+      buckets[y].push(p.value);
+    });
+    return Object.entries(buckets)
+      .map(([y, vals]) => ({ key: y, value: avg(vals) ?? 0 }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [exerciseMetricDaily]);
+
+  const exerciseDayPoints = useMemo(() => {
+    return exerciseMetricDaily.filter((p) =>
+      monthFilter ? p.date.startsWith(monthFilter) : true
+    );
+  }, [exerciseMetricDaily, monthFilter]);
+
+  const rawExerciseData =
+    generalView === "ano"
+      ? exerciseYearlyPoints
+      : generalView === "mes"
+      ? exerciseMonthlyPoints
+      : exerciseDayPoints;
+  const exerciseKeyField = generalView === "dia" ? "date" : "key";
+  const exerciseChartData =
+    rawExerciseData.length < 6
+      ? [
+          ...rawExerciseData,
+          ...Array.from({ length: 6 - rawExerciseData.length }).map(() => ({
+            [exerciseKeyField]: "",
+            value: null,
+          })),
+        ]
+      : rawExerciseData;
 
   const perExerciseStats = useMemo(() => {
     return exercises.map((ex) => {
@@ -369,8 +426,19 @@ export default function EvolucaoPage() {
     );
   }
 
-  const generalData =
+  const rawGeneralData =
     generalView === "ano" ? yearlyPoints : generalView === "mes" ? monthlyPoints : dayPoints;
+  const generalKeyField = generalView === "dia" ? "date" : "key";
+  const generalData =
+    rawGeneralData.length < 6
+      ? [
+          ...rawGeneralData,
+          ...Array.from({ length: 6 - rawGeneralData.length }).map((_, i) => ({
+            [generalKeyField]: "",
+            value: null,
+          })),
+        ]
+      : rawGeneralData;
 
   return (
     <main>
@@ -542,7 +610,7 @@ export default function EvolucaoPage() {
 
       <div className="chart-card">
         <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={exerciseSeries}>
+          <AreaChart data={exerciseChartData}>
             <defs>
               <linearGradient id="fillExercise" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#c9622f" stopOpacity={0.55} />
@@ -550,12 +618,24 @@ export default function EvolucaoPage() {
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={formatShortDay} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey={exerciseKeyField}
+              tick={{ fontSize: 11 }}
+              tickFormatter={
+                generalView === "dia"
+                  ? formatShortDay
+                  : generalView === "mes"
+                  ? formatShortMonth
+                  : undefined
+              }
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ background: "#1b1210", border: "1px solid #3a2e29", color: "#f4f1ea" }} />
             <Area
               type="monotone"
-              dataKey={exerciseMetric === "rating" ? "rating" : "reps"}
+              dataKey="value"
               stroke="#c9622f"
               strokeWidth={2.5}
               fill="url(#fillExercise)"
