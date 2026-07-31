@@ -80,8 +80,11 @@ export default function HistoricoPage() {
 
   async function openDay(iso: string) {
     const session = sessionsByDate[iso];
-    if (!session) return;
     setSelectedDate(iso);
+    if (!session) {
+      setDetails([]);
+      return;
+    }
     if (session.mode === "descanso" || session.mode === "magoado") {
       setDetails([]);
       return;
@@ -149,6 +152,18 @@ export default function HistoricoPage() {
           );
         })}
       </div>
+
+      {selectedDate && !selectedSession && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <strong>{selectedDate.split("-").reverse().join("/")}</strong>
+          <p className="muted" style={{ marginTop: 6 }}>
+            Ainda não há nada registado neste dia.
+          </p>
+          <Link href={`/registar?date=${selectedDate}`} className="action-btn dark" style={{ marginTop: 10 }}>
+            Registar treino neste dia
+          </Link>
+        </div>
+      )}
 
       {selectedSession && (
         <div className="card" style={{ marginTop: 20 }}>

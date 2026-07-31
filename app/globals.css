@@ -44,12 +44,12 @@ h2 {
 }
 
 h1 {
-  font-size: 44px;
+  font-size: 30px;
 }
 
 h2 {
-  font-size: 26px;
-  margin-bottom: 14px;
+  font-size: 20px;
+  margin-bottom: 12px;
 }
 
 .eyebrow {
@@ -81,11 +81,11 @@ a {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 22px 18px;
+  padding: 16px 18px;
   border: none;
   border-radius: 3px;
   font-family: "Anton", Arial, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   cursor: pointer;

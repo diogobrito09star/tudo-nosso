@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import ExerciseIllustration from "@/app/components/ExerciseIllustration";
 import { POSE_BY_KEY } from "@/lib/poses";
@@ -25,8 +25,10 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function RegistarPage() {
+function RegistarInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const targetDate = searchParams.get("date") ?? todayISO();
   const [step, setStep] = useState<Step>("pre_state");
   const [preState, setPreState] = useState<PreState | null>(null);
   const [mode, setMode] = useState<Mode>("rua");
@@ -74,6 +76,22 @@ export default function RegistarPage() {
   }
 
   function markInjuredHere(exId: string) {
+    if (injuredAtId === exId) {
+      // segundo clique: desfaz o que o primeiro clique fez
+      setInjuredThisSession(false);
+      setInjuredAtId(null);
+      const idx = visibleExercises.findIndex((e) => e.id === exId);
+      if (idx === -1) return;
+      setExState((prev) => {
+        const next = { ...prev };
+        for (let i = idx + 1; i < visibleExercises.length; i++) {
+          const laterEx = visibleExercises[i];
+          next[laterEx.id] = { ...ensureState(laterEx), ...next[laterEx.id], done: false };
+        }
+        return next;
+      });
+      return;
+    }
     setInjuredThisSession(true);
     setInjuredAtId(exId);
     const idx = visibleExercises.findIndex((e) => e.id === exId);
@@ -105,7 +123,7 @@ export default function RegistarPage() {
       .from("sessions")
       .upsert(
         {
-          date: todayISO(),
+          date: targetDate,
           mode,
           pre_state: preState,
           overall_rating: overallRating,
@@ -162,6 +180,11 @@ export default function RegistarPage() {
           ← Voltar
         </Link>
         <div className="eyebrow">Calistenia</div>
+        {targetDate !== todayISO() && (
+          <p className="muted" style={{ marginTop: -8, marginBottom: 12 }}>
+            A registar o treino de {targetDate.split("-").reverse().join("/")}
+          </p>
+        )}
         <h2>Antes deste treino, como estás?</h2>
         {(Object.keys(PRE_STATE_LABEL) as PreState[]).map((k) => (
           <button
@@ -295,15 +318,12 @@ export default function RegistarPage() {
                       borderRadius: 3,
                       fontWeight: 700,
                       cursor: "pointer",
-                      background: injuredAtId === ex.id ? "#ffffff" : "transparent",
-                      border:
-                        injuredAtId === ex.id
-                          ? "2px solid var(--danger)"
-                          : "1px solid var(--line)",
-                      color: injuredAtId === ex.id ? "var(--danger)" : "var(--ink)",
+                      background: "#ffffff",
+                      border: "2px solid var(--danger)",
+                      color: "var(--danger)",
                     }}
                   >
-                    {injuredAtId === ex.id ? "✚ Já me rasguei todo" : "Já me rasguei todo"}
+                    ✚ {injuredAtId === ex.id ? "Desfazer" : "Já me rasguei todo"}
                   </button>
                 </div>
               )}
@@ -352,6 +372,20 @@ export default function RegistarPage() {
                 value={s.repsSeguidas}
                 onChange={(e) => updateState(ex.id, { repsSeguidas: e.target.value }, ex)}
               />
+              {Array.from({ length: ex.target_sets }).map((_, i) => (
+                <div key={i}>
+                  <label>Série {i + 1}</label>
+                  <input
+                    type="number"
+                    value={s.repsPerSet[i] ?? ""}
+                    onChange={(e) => {
+                      const next = [...s.repsPerSet];
+                      next[i] = e.target.value;
+                      updateState(ex.id, { repsPerSet: next }, ex);
+                    }}
+                  />
+                </div>
+              ))}
               <label>Nota</label>
               <textarea
                 value={s.note}
@@ -372,12 +406,12 @@ export default function RegistarPage() {
             borderRadius: 3,
             fontWeight: 700,
             cursor: "pointer",
-            background: injuredThisSession ? "#ffffff" : "transparent",
-            border: injuredThisSession ? "2px solid var(--danger)" : "1px solid var(--line)",
-            color: injuredThisSession ? "var(--danger)" : "var(--ink)",
+            background: "#ffffff",
+            border: "2px solid var(--danger)",
+            color: "var(--danger)",
           }}
         >
-          {injuredThisSession ? "✚ Magoei-me neste treino" : "Magoei-me neste treino"}
+          ✚ {injuredThisSession ? "Desfazer" : "Magoei-me neste treino"}
         </button>
 
         <label htmlFor="planChange">Queres fazer alguma alteração ao plano?</label>
@@ -407,5 +441,13 @@ export default function RegistarPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function RegistarPage() {
+  return (
+    <Suspense fallback={<main><p className="muted">A carregar...</p></main>}>
+      <RegistarInner />
+    </Suspense>
   );
 }

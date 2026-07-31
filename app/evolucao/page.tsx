@@ -35,6 +35,35 @@ function fmt1(n: number | null) {
   return n === null ? "—" : n.toFixed(1);
 }
 
+function fmtRound(n: number | null) {
+  return n === null ? "—" : String(Math.round(n));
+}
+
+function fmtDelta(n: number | null) {
+  if (n === null) return "";
+  const r = Math.round(n);
+  if (r > 0) return `+${r}`;
+  return String(r);
+}
+
+const MONTH_ABBR = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+];
+
+function formatShortDay(iso: string) {
+  const parts = iso.split("-");
+  if (parts.length !== 3) return iso;
+  return `${parts[2]}/${parts[1]}`;
+}
+
+function formatShortMonth(ym: string) {
+  const parts = ym.split("-");
+  if (parts.length !== 2) return ym;
+  const idx = Number(parts[1]) - 1;
+  return MONTH_ABBR[idx] ?? ym;
+}
+
 export default function EvolucaoPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [logs, setLogs] = useState<ExerciseLogRow[]>([]);
@@ -42,7 +71,7 @@ export default function EvolucaoPage() {
   const [weighIns, setWeighIns] = useState<WeighIn[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [generalView, setGeneralView] = useState<GeneralView>("mes");
+  const [generalView, setGeneralView] = useState<GeneralView>("dia");
   const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -440,7 +469,19 @@ export default function EvolucaoPage() {
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
-            <XAxis dataKey={generalView === "dia" ? "date" : "key"} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey={generalView === "dia" ? "date" : "key"}
+              tick={{ fontSize: 11 }}
+              tickFormatter={
+                generalView === "dia"
+                  ? formatShortDay
+                  : generalView === "mes"
+                  ? formatShortMonth
+                  : undefined
+              }
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             {generalView !== "dia" && <Tooltip content={<BucketTooltip />} />}
             {generalView === "dia" && <Tooltip content={<DayTooltip />} />}
@@ -459,7 +500,7 @@ export default function EvolucaoPage() {
 
       {generalView === "dia" && selectedDay && selectedDaySession && (
         <div className="card">
-          <strong>{selectedDay}</strong>
+          <strong>{formatShortDay(selectedDay)}</strong>
           {selectedDayLogs.map((l) => (
             <div key={l.id} className="exercise-row">
               <span className="exercise-name">{l.exercises?.name}</span>
@@ -509,7 +550,7 @@ export default function EvolucaoPage() {
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={formatShortDay} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ background: "#1b1210", border: "1px solid #3a2e29", color: "#f4f1ea" }} />
             <Area
@@ -524,60 +565,72 @@ export default function EvolucaoPage() {
         </ResponsiveContainer>
       </div>
 
-      <button
+      <a
+        href="#"
         style={{
-          width: "100%",
-          padding: 12,
-          background: "transparent",
-          border: "1px solid var(--line)",
-          borderRadius: 6,
-          cursor: "pointer",
+          display: "block",
+          fontSize: 12,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
           fontWeight: 700,
+          color: "var(--muted)",
+          textDecoration: "underline",
           marginBottom: 20,
+          cursor: "pointer",
         }}
-        onClick={() => setShowMore((v) => !v)}
+        onClick={(e) => {
+          e.preventDefault();
+          setShowMore((v) => !v);
+        }}
       >
         {showMore ? "Esconder mais dados" : "Ver mais dados"}
-      </button>
+      </a>
 
       {showMore && (
         <div>
-          <div className="card">
-            <div className="exercise-row">
-              <span>Melhor média</span>
-              <span className="exercise-target">
-                {bestAvg ? `${bestAvg.exercise.name} · ${fmt1(bestAvg.avgRating)}` : "—"}
-              </span>
+          <div className="stat-grid">
+            <div className="stat-box">
+              <div className="stat-label">Melhor média</div>
+              <div className="exercise-name">{bestAvg ? bestAvg.exercise.name : "—"}</div>
+              <div className="muted">{bestAvg ? `${fmt1(bestAvg.avgRating)}/10` : ""}</div>
             </div>
-            <div className="exercise-row">
-              <span>Pior média</span>
-              <span className="exercise-target">
-                {worstAvg ? `${worstAvg.exercise.name} · ${fmt1(worstAvg.avgRating)}` : "—"}
-              </span>
+            <div className="stat-box">
+              <div className="stat-label">Pior média</div>
+              <div className="exercise-name">{worstAvg ? worstAvg.exercise.name : "—"}</div>
+              <div className="muted">{worstAvg ? `${fmt1(worstAvg.avgRating)}/10` : ""}</div>
             </div>
-            <div className="exercise-row">
-              <span>O que mais subiu</span>
-              <span className="exercise-target">
+            <div className="stat-box">
+              <div className="stat-label">Mais subiu (pontuação)</div>
+              <div className="exercise-name">
+                {mostImprovedScore ? mostImprovedScore.exercise.name : "—"}
+              </div>
+              <div className="muted">
                 {mostImprovedScore
-                  ? `${mostImprovedScore.exercise.name} · ${fmt1(mostImprovedScore.ratingFirstHalf)} → ${fmt1(mostImprovedScore.ratingSecondHalf)}`
-                  : "—"}
-              </span>
+                  ? `${fmtRound(mostImprovedScore.ratingFirstHalf)}/10 → ${fmtRound(mostImprovedScore.ratingSecondHalf)}/10`
+                  : ""}
+              </div>
             </div>
-            <div className="exercise-row">
-              <span>O que mais desceu</span>
-              <span className="exercise-target">
+            <div className="stat-box">
+              <div className="stat-label">Mais desceu (pontuação)</div>
+              <div className="exercise-name">
+                {somethingDeclined && worstDeltaScore ? worstDeltaScore.exercise.name : "Nada desceu"}
+              </div>
+              <div className="muted">
                 {somethingDeclined && worstDeltaScore
-                  ? `${worstDeltaScore.exercise.name} · ${fmt1(worstDeltaScore.ratingFirstHalf)} → ${fmt1(worstDeltaScore.ratingSecondHalf)}`
-                  : "Nada desceu, boa notícia"}
-              </span>
+                  ? `${fmtRound(worstDeltaScore.ratingFirstHalf)}/10 → ${fmtRound(worstDeltaScore.ratingSecondHalf)}/10`
+                  : "Boa notícia"}
+              </div>
             </div>
-            <div className="exercise-row">
-              <span>Mais subiu em reps seguidas</span>
-              <span className="exercise-target">
+            <div className="stat-box">
+              <div className="stat-label">Mais subiu (reps seguidas)</div>
+              <div className="exercise-name">
+                {mostImprovedReps ? mostImprovedReps.exercise.name : "—"}
+              </div>
+              <div className="muted">
                 {mostImprovedReps
-                  ? `${mostImprovedReps.exercise.name} · ${fmt1(mostImprovedReps.repsFirstHalf)} → ${fmt1(mostImprovedReps.repsSecondHalf)}`
-                  : "—"}
-              </span>
+                  ? `${fmtRound(mostImprovedReps.repsFirstHalf)} → ${fmtRound(mostImprovedReps.repsSecondHalf)}`
+                  : ""}
+              </div>
             </div>
           </div>
 
@@ -587,27 +640,51 @@ export default function EvolucaoPage() {
               padding: 10,
               background: "transparent",
               border: "1px solid var(--line)",
-              borderRadius: 6,
+              borderRadius: 3,
               cursor: "pointer",
               fontWeight: 600,
               marginBottom: 20,
             }}
             onClick={() => setShowAllDeltas((v) => !v)}
           >
-            {showAllDeltas ? "Esconder lista completa" : "Ver todas as subidas e descidas"}
+            {showAllDeltas ? "Esconder subidas e descidas" : "Ver todas as subidas e descidas"}
           </button>
 
           {showAllDeltas && (
-            <div className="card">
-              {perExerciseStats.map((s) => (
-                <div key={s.exercise.id} className="exercise-row">
-                  <span className="exercise-name">{s.exercise.name}</span>
-                  <span className="exercise-target">
-                    pont. {s.ratingDelta !== null ? s.ratingDelta.toFixed(1) : "—"} · reps{" "}
-                    {s.repsDelta !== null ? s.repsDelta.toFixed(1) : "—"}
-                  </span>
-                </div>
-              ))}
+            <>
+              <div className="eyebrow" style={{ marginBottom: 4 }}>
+                Pontuação (0-10), por exercício
+              </div>
+              {perExerciseStats
+                .filter((s) => s.ratingDelta !== null)
+                .sort((a, b) => (b.ratingDelta ?? 0) - (a.ratingDelta ?? 0))
+                .map((s) => (
+                  <div key={s.exercise.id} className="exercise-row">
+                    <span className="exercise-name">{s.exercise.name}</span>
+                    <span className="exercise-target">
+                      {fmtRound(s.ratingFirstHalf)}/10 → {fmtRound(s.ratingSecondHalf)}/10{" "}
+                      {fmtDelta(s.ratingDelta)}
+                    </span>
+                  </div>
+                ))}
+
+              <div className="eyebrow" style={{ marginTop: 18, marginBottom: 4 }}>
+                Repetições seguidas, por exercício
+              </div>
+              {perExerciseStats
+                .filter((s) => s.repsDelta !== null)
+                .sort((a, b) => (b.repsDelta ?? 0) - (a.repsDelta ?? 0))
+                .map((s) => (
+                  <div key={s.exercise.id} className="exercise-row">
+                    <span className="exercise-name">{s.exercise.name}</span>
+                    <span className="exercise-target">
+                      {fmtRound(s.repsFirstHalf)} → {fmtRound(s.repsSecondHalf)}{" "}
+                      {fmtDelta(s.repsDelta)}
+                    </span>
+                  </div>
+                ))}
+            </>
+          )}
             </div>
           )}
 
