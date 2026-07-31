@@ -685,8 +685,6 @@ export default function EvolucaoPage() {
                 ))}
             </>
           )}
-            </div>
-          )}
 
           <div className="card">
             <div className="eyebrow" style={{ marginBottom: 8 }}>
