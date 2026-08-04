@@ -357,12 +357,13 @@ function RegistarInner() {
           return (
             <div key={ex.id} className="card">
               <span className="exercise-name">{ex.name}</span>
+              <label style={{ marginTop: 10 }}>Pontuação (0 a 10)</label>
               <div className="score-grid">
                 {Array.from({ length: 11 }).map((_, n) => (
                   <button
                     key={n}
                     type="button"
-                    className={`score-btn ${Number(s.rating) === n ? "active" : ""}`}
+                    className={`score-btn ${s.rating !== "" && Number(s.rating) === n ? "active" : ""}`}
                     onClick={() => updateState(ex.id, { rating: String(n) }, ex)}
                   >
                     {n}
